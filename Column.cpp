@@ -13,7 +13,9 @@ Column::Column(Column& other) {
 Column::~Column() {
 	delete[] rows;
 }
-
+size_t Column::get_number_of_rows() {
+	return number_of_rows;
+}
 
 void Column::set_columtype(std::string _column_type) {
 	if (_column_type == "String") {
@@ -65,13 +67,34 @@ std::string Column::get_row(size_t n) {
 	return rows[n];
 }
 void Column::set_row(std::string new_row) {
-	std::string* buff = new std::string[number_of_rows+1];
-	for (size_t i = 0; i < number_of_rows; i++) {
-		buff[i] = rows[i];		
-	}
 	number_of_rows++;
-	delete[] rows;
-	rows = new std::string[number_of_rows];
-	rows = buff;
-	rows[number_of_rows-1] = new_row;
+	if (number_of_rows == 1) {
+		rows = new std::string[number_of_rows];
+		rows[number_of_rows-1] = new_row;
+	}
+	else {
+		std::string* buff = new std::string[number_of_rows];
+
+		for (size_t i = 0; i < number_of_rows-1; i++) {
+			buff[i].resize(20);
+			buff[i] = rows[i];
+		}
+		
+		delete[] rows;
+		rows = new std::string[number_of_rows ];
+		for (size_t i = 0; i < number_of_rows-1; i++) {
+			rows[i].resize(20);
+			rows[i] = buff[i];
+		}
+		rows[number_of_rows-1] = new_row;
+
+		delete[] buff;
+	}
+
+}
+void Column::pr() {
+	for (int i = 0; i < number_of_rows; i++) {
+		std::cout << rows[i];
+	}
+	std::cout << std::endl;
 }
