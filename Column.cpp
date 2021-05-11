@@ -10,9 +10,9 @@ Column::Column(Column& other) {
 	this->number_of_rows = other.number_of_rows;
 	this->rows = other.rows;
 }
-Column::~Column() {
+/*Column::~Column() {
 	delete[] rows;
-}
+}*/
 size_t Column::get_number_of_rows()const {
 	return number_of_rows;
 }
