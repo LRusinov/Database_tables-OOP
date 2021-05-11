@@ -10,12 +10,12 @@ public:
 	Column(Column& other);
 	~Column();
 
-	size_t get_number_of_rows();
-	void set_columtype(std::string _column_type);
-	type get_columtype();
+	size_t get_number_of_rows()const;
+	void set_columtype(const std::string _column_type);
+	type get_columtype()const;
 	type type_check(std::string* _rows);
-	void set_row(std::string new_row);
-	std::string get_row(size_t n);
+	void set_row(const std::string new_row);
+	std::string get_row(const size_t n)const;
 	void pr();
 
 	
