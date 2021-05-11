@@ -8,7 +8,7 @@ private:
 public:
 	Column();
 	Column(Column& other);
-	~Column();
+	//~Column();
 	
 	size_t get_number_of_rows()const;
 	void set_columtype(const std::string _column_type);
