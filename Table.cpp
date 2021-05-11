@@ -1,5 +1,13 @@
 #include"Table.h"
 #include<fstream>
+Table::Table() {
+    name = "";
+    number_of_columns = 0;
+    columns = nullptr;
+}
+Table::~Table() {
+    delete[] columns;
+}
 void Table::Read_from_file(std::ifstream&  myfile) {
     size_t counter = 0,column_counter=0;
     std::string text;   
@@ -8,12 +16,12 @@ void Table::Read_from_file(std::ifstream&  myfile) {
         if (counter == 1) {
             for (size_t i = 0; i < text.length(); i++) {
                 if (text[i] == ',') {
-                    number_of_colums++;
+                    number_of_columns++;
                 }
             }
-            number_of_colums++;
+            number_of_columns++;
             delete[] columns;
-            columns = new Column[number_of_colums];
+            columns = new Column[number_of_columns];
             size_t index = 0;
             while (index < text.length()) {
 
@@ -57,7 +65,7 @@ void Table::Read_from_file(std::ifstream&  myfile) {
             size_t index=1,i=0;
             std::string buff;
             buff.resize(text.length()+1);
-            while (index < text.length()-1&& column_counter<number_of_colums) {
+            while (index < text.length()-1&& column_counter<number_of_columns) {
                 
                 while (text[index] != '|') {
           
@@ -82,13 +90,13 @@ myfile.close();
 void Table::print() {
     size_t counter=0;
     
-    for (size_t i = 0; i < number_of_colums * 19;i++) {
+    for (size_t i = 0; i < number_of_columns * 19;i++) {
         std::cout << "=";
     }
     std::cout << std::endl;
     while (counter < columns[0].get_number_of_rows()) {
         std::cout << "|";
-        for (size_t i = 0; i < number_of_colums; i++) {
+        for (size_t i = 0; i < number_of_columns; i++) {
             std::cout << columns[i].get_row(counter);
             if (columns[i].get_row(counter).length() < 20) {
                 for (size_t g = 0; g < 20 - columns[i].get_row(counter).length(); g++) {
@@ -98,7 +106,7 @@ void Table::print() {
             std::cout << "|";
         }
         std::cout << std::endl;
-        for (size_t i = 0; i < number_of_colums * 19; i++) {
+        for (size_t i = 0; i < number_of_columns * 19; i++) {
             std::cout << "=";
         }
         std::cout << std::endl;
@@ -109,7 +117,7 @@ void Table::print() {
 template<typename T>
 T Table::add(T* arr, const size_t size_of_arr, const T element_to_add) {
     T* buff = new T[size_of_arr];
-    for (size_t i = 0; i < number_of_tables - 1; i++) {
+    for (size_t i = 0; i < size_of_arr - 1; i++) {
         buff[i] = arr[i];
     }
     delete[] arr;
@@ -124,7 +132,7 @@ std::string Table::get_name()const{
     return name;
 }
 void Table::show_columnstypes(){
-    for (size_t i = 0; i < number_of_colums; i++) {
+    for (size_t i = 0; i < number_of_columns; i++) {
         switch (columns[i].get_columtype()) {
         case type::Double: std::cout << "Double"<<std::endl; break;
         case type::Integer: std::cout << "Integer" << std::endl; break;
@@ -134,9 +142,37 @@ void Table::show_columnstypes(){
     }
 
 }
-void Table::search_row(const size_t n, const std::string value) {
+void Table::search_rows(const size_t n, const std::string value) {
     for (size_t i = 0; i < columns[n-1].get_number_of_rows(); i++) {
-        if (columns[n - 1].get_row(i) == value) {//////
+        if (columns[n - 1].get_row(i) == value) {
+            columns[n - 1].print_row();
         }
     }
+}
+Table& Table::search_table(const std::string name, const Table* tables, const size_t num_of_tables) {
+    for (size_t i = 0; i < num_of_tables; i++) {
+        if (tables[i].get_name() == name) {
+            *this = tables[i];
+            break;
+        }
+    }
+    return *this;
+}
+Table& Table::operator=(const Table& other) {
+    this->name = other.name;
+    this->columns = other.columns;
+    this->number_of_columns = other.number_of_columns;
+    return *this;
+}
+Column* Table::get_columns()const {
+    return this->columns;
+}
+Column Table::get_column(const size_t n)const {
+    return columns[n];
+}
+size_t Table::get_num_of_columns()const {
+    return number_of_columns;
+}
+void Table::set_name(const std::string new_name) {
+    this->name = new_name;
 }
