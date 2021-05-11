@@ -98,3 +98,25 @@ void Column::pr() {
 	}
 	std::cout << std::endl;
 }
+void Column::print_row() {
+	for (size_t i = 0; i < number_of_rows; i++) {
+		std::cout << this->rows[i] << " ";
+	}
+	std::cout << std::endl;
+}
+void Column::delete_row(const size_t n) {
+	number_of_rows--;
+	std::string* buff=new std::string[number_of_rows];
+	for (size_t i = n; i < number_of_rows; i++) {
+		rows[i] = rows[i + 1];
+	}
+	for (size_t i = 0; i < number_of_rows; i++) {
+		buff[i] = rows[i];
+	}
+	delete[] rows;
+	rows = new std::string[number_of_rows];
+	for (size_t i = 0; i < number_of_rows; i++) {
+		rows[i] = buff[i];
+	}
+	delete[] buff;
+}
