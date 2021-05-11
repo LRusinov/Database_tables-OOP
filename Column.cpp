@@ -13,11 +13,11 @@ Column::Column(Column& other) {
 Column::~Column() {
 	delete[] rows;
 }
-size_t Column::get_number_of_rows() {
+size_t Column::get_number_of_rows()const {
 	return number_of_rows;
 }
 
-void Column::set_columtype(std::string _column_type) {
+void Column::set_columtype(const std::string _column_type) {
 	if (_column_type == "String") {
 		column_type = type::String;
 	}
@@ -34,7 +34,7 @@ void Column::set_columtype(std::string _column_type) {
 		std::cout << "Unknown column type!";
 	}
 }
-type Column::get_columtype() {
+type Column::get_columtype()const {
 	return this->column_type;
 }
 type Column::type_check(std::string* _rows) {
@@ -63,10 +63,10 @@ type Column::type_check(std::string* _rows) {
 		}
 	}
 }
-std::string Column::get_row(size_t n) {
+std::string Column::get_row(const size_t n)const {
 	return rows[n];
 }
-void Column::set_row(std::string new_row) {
+void Column::set_row(const std::string new_row) {
 	number_of_rows++;
 	if (number_of_rows == 1) {
 		rows = new std::string[number_of_rows];
