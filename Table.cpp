@@ -5,10 +5,11 @@ Table::Table() {
     number_of_columns = 0;
     columns = nullptr;
 }
-Table::~Table() {
+/*Table::~Table() {
     delete[] columns;
-}
-void Table::Read_from_file(std::ifstream&  myfile) {
+}*/
+void Table::Read_from_file(const std::string  file_name) {
+    std::ifstream myfile(file_name);
     size_t counter = 0,column_counter=0;
     std::string text;   
     while (getline(myfile, text) && text != "") {
@@ -24,7 +25,6 @@ void Table::Read_from_file(std::ifstream&  myfile) {
             columns = new Column[number_of_columns];
             size_t index = 0;
             while (index < text.length()) {
-
                 if (text[index] == 'S') {
                     columns[column_counter].set_columtype("String");
                     index += 7;
@@ -54,13 +54,14 @@ void Table::Read_from_file(std::ifstream&  myfile) {
             }
             counter++;
         }
-        else if (counter == 2) {
+        if (counter == 2) {
+            getline(myfile, text);
             name = text;
+            
             counter++;
         }
         else if(text[0]=='|'){
             
-
             column_counter = 0;
             size_t index=1,i=0;
             std::string buff;
@@ -89,7 +90,7 @@ myfile.close();
 }
 void Table::print() {
     size_t counter=0;
-    
+    std::cout << name << std::endl;
     for (size_t i = 0; i < number_of_columns * 19;i++) {
         std::cout << "=";
     }
@@ -114,30 +115,17 @@ void Table::print() {
     }
 
 }
-template<typename T>
-T Table::add(T* arr, const size_t size_of_arr, const T element_to_add) {
-    T* buff = new T[size_of_arr];
-    for (size_t i = 0; i < size_of_arr - 1; i++) {
-        buff[i] = arr[i];
-    }
-    delete[] arr;
-    arr = new T[size_of_arr];
-    for (size_t i = 0; i < size_of_arr - 1; i++) {
-        arr[i] = buff[i];
-    }
-    delete[] buff;
-    arr[size_of_arr - 1] = element_to_add;
-}
+
 std::string Table::get_name()const{
     return name;
 }
 void Table::show_columnstypes(){
     for (size_t i = 0; i < number_of_columns; i++) {
         switch (columns[i].get_columtype()) {
-        case type::Double: std::cout << "Double"<<std::endl; break;
-        case type::Integer: std::cout << "Integer" << std::endl; break;
-        case type::String: std::cout << "String" << std::endl; break;
-        case type::Null: std::cout << "Null" << std::endl; break;
+        case type::Double: std::cout <<i+1<<". " <<"Double"<<std::endl; break;
+        case type::Integer: std::cout << i+1 << ". "<< "Integer" << std::endl; break;
+        case type::String: std::cout << i+1 << ". " << "String" << std::endl; break;
+        case type::Null: std::cout << i+1 << ". " << "Null" << std::endl; break;
         }
     }
 
