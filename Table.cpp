@@ -1,9 +1,8 @@
 #include"Table.h"
 #include<fstream>
-void Table::Read_from_file() {
+void Table::Read_from_file(std::ifstream&  myfile) {
     size_t counter = 0,column_counter=0;
-    std::string text;
-    std::ifstream  myfile("example.txt");   
+    std::string text;   
     while (getline(myfile, text) && text != "") {
         counter++;
         if (counter == 1) {
@@ -106,4 +105,38 @@ void Table::print() {
         counter++;
     }
 
+}
+template<typename T>
+T Table::add(T* arr, const size_t size_of_arr, const T element_to_add) {
+    T* buff = new T[size_of_arr];
+    for (size_t i = 0; i < number_of_tables - 1; i++) {
+        buff[i] = arr[i];
+    }
+    delete[] arr;
+    arr = new T[size_of_arr];
+    for (size_t i = 0; i < size_of_arr - 1; i++) {
+        arr[i] = buff[i];
+    }
+    delete[] buff;
+    arr[size_of_arr - 1] = element_to_add;
+}
+std::string Table::get_name()const{
+    return name;
+}
+void Table::show_columnstypes(){
+    for (size_t i = 0; i < number_of_colums; i++) {
+        switch (columns[i].get_columtype()) {
+        case type::Double: std::cout << "Double"<<std::endl; break;
+        case type::Integer: std::cout << "Integer" << std::endl; break;
+        case type::String: std::cout << "String" << std::endl; break;
+        case type::Null: std::cout << "Null" << std::endl; break;
+        }
+    }
+
+}
+void Table::search_row(const size_t n, const std::string value) {
+    for (size_t i = 0; i < columns[n-1].get_number_of_rows(); i++) {
+        if (columns[n - 1].get_row(i) == value) {//////
+        }
+    }
 }
