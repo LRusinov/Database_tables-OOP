@@ -65,7 +65,7 @@ void Table::Read_from_file(const std::string  file_name) {
             column_counter = 0;
             size_t index=1,i=0;
             std::string buff;
-            buff.resize(text.length()+1);
+            buff.resize(20);
             while (index < text.length()-1&& column_counter<number_of_columns) {
                 
                 while (text[index] != '|') {
@@ -76,9 +76,7 @@ void Table::Read_from_file(const std::string  file_name) {
                     index++;
                 }
                 
-                columns[column_counter].set_row(buff);
-                
-                
+                columns[column_counter].new_row(buff);           
                 column_counter++;
                 i = 0;
                 index++;
@@ -100,8 +98,8 @@ void Table::print() {
         for (size_t i = 0; i < number_of_columns; i++) {
             std::cout << columns[i].get_row(counter);
             if (columns[i].get_row(counter).length() < 20) {
-                for (size_t g = 0; g < 20 - columns[i].get_row(counter).length(); g++) {
-                    std::cout << " ";
+                for (size_t g = 0; g < 18 - columns[i].get_row(counter).length(); g++) {
+                    std::cout << columns[i].get_row(counter).length() ;
                 }
             }
             std::cout << "|";
@@ -155,7 +153,7 @@ Table& Table::operator=(const Table& other) {
 Column* Table::get_columns()const {
     return this->columns;
 }
-Column Table::get_column(const size_t n)const {
+Column& Table::get_column(const size_t n)const {
     return columns[n];
 }
 size_t Table::get_num_of_columns()const {
@@ -163,4 +161,17 @@ size_t Table::get_num_of_columns()const {
 }
 void Table::set_name(const std::string new_name) {
     this->name = new_name;
+}
+void Table::set_num_of_columns(const size_t n) {
+    number_of_columns = n;
+}
+void Table::destroy_columns() {
+    delete[] columns;
+}
+void Table::new_columns(const size_t size) {
+    columns = new Column[size];
+}
+void Table::set_column(const size_t n, const Column column) {
+    columns[n] = column;
+
 }
