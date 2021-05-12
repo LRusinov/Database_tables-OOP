@@ -9,8 +9,9 @@ public:
 	//~Table();
 	void set_name(const std::string new_name);//
 	std::string get_name()const;//
+	void set_num_of_columns(const size_t n);
 	Column* get_columns()const;
-	Column get_column(const size_t n)const;//
+	Column& get_column(const size_t n)const;//
 	size_t get_num_of_columns()const;//
 	void print();//
 	void Read_from_file(const std::string  file_name);//
@@ -38,4 +39,7 @@ public:
 	void search_rows(const size_t n, const std::string value);
 	Table& search_table(const std::string name,const Table* tables, const size_t num_of_tables);//
 	Table& operator=(const Table& other);//
+	void destroy_columns();
+	void new_columns(const size_t size);
+	void set_column(const size_t n, const Column column);
 };
