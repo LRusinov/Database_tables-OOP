@@ -38,7 +38,7 @@ void Table::Read_from_file(const std::string  file_name) {
                 }
                 else if (text[index] == 'I') {
                     columns[column_counter].set_columtype("Integer");
-                    index += 7;
+                    index += 8;
                     column_counter++;
                 }
                 else if (text[index] == 'N') {
@@ -47,8 +47,7 @@ void Table::Read_from_file(const std::string  file_name) {
                     column_counter++;
                 }
                 else {
-                    std::cout << text[index];
-                    std::cout << "Unknown type";
+                    std::cout << "Unknown type"<<std::endl;
                     break;
                 }
             }
@@ -99,7 +98,7 @@ void Table::print() {
             std::cout << columns[i].get_row(counter);
             if (columns[i].get_row(counter).length() < 20) {
                 for (size_t g = 0; g < 18 - columns[i].get_row(counter).length(); g++) {
-                    std::cout << columns[i].get_row(counter).length() ;
+                    std::cout << " ";
                 }
             }
             std::cout << "|";
