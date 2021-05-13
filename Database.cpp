@@ -13,6 +13,7 @@ Database::Database(Database& other) {
 	this->number_of_tables = other.number_of_tables;
 }
 void Database::showtables() {
+	std::cout << "DATABASE: " << std::endl<<std::endl;
 	for (size_t i = 0; i < number_of_tables; i++) {
 		all_tables[i].print();
 	}
@@ -72,10 +73,15 @@ void Database::select(const size_t column_n,std::string value,const std::string 
 		std::cout << "There is no table with this name in the database!" << std::endl;
 	}
 	else {
+		value.resize(20);
 		for (size_t i = 0; i < all_tables[index].get_column(0).get_number_of_rows(); i++) {
-			value.resize(20);
+			
 			if (value.compare(all_tables[index].get_column(column_n).get_row(i))==0) {
-				all_tables[index].get_column(column_n).print_row();
+				for (size_t g = 0; g < all_tables[index].get_num_of_columns(); g++) {
+
+					std::cout<<all_tables[index].get_column(g).get_row(i);
+				}
+				std::cout << std::endl;
 			}
 
 
@@ -173,6 +179,7 @@ void Database::export_table(const std::string table_name, const std::string file
 	std::ofstream myfile;
 	myfile.open(file_name, std::ios::out);
 	for (size_t i = 0; i < searched_table.get_num_of_columns(); i++) {
+
 		switch (searched_table.get_column(i).get_columtype()) {
 		case type::Double: myfile << "Double" ;   break;
 		case type::Integer: myfile << "Integer";   break;
@@ -210,16 +217,27 @@ void Database::export_table(const std::string table_name, const std::string file
 	}
 	myfile.close();
 }
-size_t Database::count(const std::string table_name, const size_t column_n,const std::string value) {
-	Table searched_table;
+void Database::count(const std::string table_name, const size_t column_n, std::string value) {
 	size_t counter = 0;
-	searched_table.search_table(table_name, all_tables, number_of_tables);
-	for (size_t i = 0; i < searched_table.get_num_of_columns(); i++) {
-		if (searched_table.get_column(column_n-1).get_row(i) == value) {
-			counter++;
+	size_t index = -1;
+	for (size_t i = 0; i < number_of_tables; i++) {
+		if (all_tables[i].get_name() == table_name) {
+			index = i;
+			break;
 		}
 	}
-	return counter;
+	if (index == -1) {
+		std::cout << "There is no table with this name in the database!" << std::endl;
+	}
+	else {
+		value.resize(20);
+		for (size_t i = 0; i < all_tables[index].get_column(column_n).get_number_of_rows(); i++) {
+			if (all_tables[index].get_column(column_n).get_row(i) == value) {
+				counter++;
+			}
+		}
+	}
+	std::cout<< counter<<std::endl;
 }
 
 void Database::update(const std::string table_name, const size_t column_n,std::string value, const size_t target_column_n, const std::string target_value) {
@@ -244,6 +262,7 @@ void Database::update(const std::string table_name, const size_t column_n,std::s
 }
 void Database::aggregate(const std::string table_name, const size_t column_n, std::string value, const size_t target_column_n, const std::string operation) {
 	double result=0;
+	bool flag = true;
 	if (operation != "sum" && operation != "product" && operation != "maximum" && operation != "minimum") {
 		std::cout << "Invalid operation!"<<std::endl;
 	}
@@ -267,62 +286,66 @@ void Database::aggregate(const std::string table_name, const size_t column_n, st
 				value.resize(20);
 				for (size_t i = 0; i < all_tables[index].get_column(column_n).get_number_of_rows(); i++) {
 					if (all_tables[index].get_column(column_n).get_row(i) == value) {
-						if (all_tables[index].get_column(target_column_n).get_columtype() != type::Integer) {
-							result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(0));
-							for (size_t j = 1; j < all_tables[index].get_column(target_column_n).get_number_of_rows(); j++) {
-								if (operation == "sum") {
-
-									result += all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
-								}
-								if (operation == "product") {
-
-									result *= all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
-								}
-								if (operation == "maximum") {
-									if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j)) > result) {
-
-
-										result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+						if (all_tables[index].get_column(target_column_n).get_columtype() == type::Integer) {
+							if (flag) {
+								result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i));
+								flag = false;
+							}
+							else {
+								
+									if (operation == "sum") {
+										result += all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i));
 									}
-								}
-								if (operation == "minimum") {
-									if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j)) < result) {
+									else if (operation == "product") {
 
-
-										result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+										result *= all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i));
 									}
+									else if (operation == "maximum") {
+										if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i)) > result) {
 
-								}
 
+											result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i));
+										}
+									}
+									else if (operation == "minimum") {
+										if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i)) < result) {
+
+
+											result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(i));
+										}
+
+									}
 							}
 						}
 						else {
-							result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(0));
-							for (size_t j = 1; j < all_tables[index].get_column(target_column_n).get_number_of_rows(); j++) {
+							if (flag) {
+								result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i));
+								flag = false;
+							}
+							else {
+
 								if (operation == "sum") {
-
-									result += all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+									result += all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i));
 								}
-								if (operation == "product") {
+								else if (operation == "product") {
 
-									result *= all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+									result *= all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i));
 								}
-								if (operation == "maximum") {
-									if (all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j)) > result) {
+								else if (operation == "maximum") {
+									if (all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i)) > result) {
 
 
-										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i));
 									}
 								}
-								if (operation == "minimum") {
-									if (all_tables[index].get_column(target_column_n).string_to_double((all_tables[index].get_column(target_column_n).get_row(j))) < result) {
+								else if (operation == "minimum") {
+									if (all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i)) < result) {
 
 
-										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(i));
 									}
 
 								}
-
 							}
 
 						}
