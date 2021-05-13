@@ -197,7 +197,7 @@ int Column::string_to_int(const std::string str) {
 
 
 	for (size_t i = start_index; i < str.length(); i++) {
-		if (!(str[i] >='0' && str[i] <='9')) {
+		if (!(str[i] >= '0' && str[i] <= '9')) {
 			length = i;
 			break;
 		}
@@ -209,7 +209,7 @@ int Column::string_to_int(const std::string str) {
 	}
 	s--;
 	for (size_t i = start_index; i < length; i++) {
-		result += str[i] - 48 * pow(10, s);
+		result += (str[i] - 48) * pow(10, s);
 
 		s--;
 	}
