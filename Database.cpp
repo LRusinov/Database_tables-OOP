@@ -1,5 +1,17 @@
 #include "Database.h"
 #include<fstream>
+Database::Database() {
+	all_tables = nullptr;
+	names_of_files = nullptr;
+	number_of_files = 0;
+	number_of_tables = 0;
+}
+Database::Database(Database& other) {
+	this->all_tables = other.all_tables;
+	this->names_of_files = other.names_of_files;
+	this->number_of_files = other.number_of_files;
+	this->number_of_tables = other.number_of_tables;
+}
 void Database::showtables() {
 	for (size_t i = 0; i < number_of_tables; i++) {
 		all_tables[i].print();
@@ -48,8 +60,7 @@ void Database::print(const std::string table_name) {
 	searched_table.search_table(table_name,all_tables,number_of_tables);
 		searched_table.print();
 }
-void Database::select(const size_t column_n,const std::string value,const std::string table_name) {
-	std::ofstream f("x.txt");
+void Database::select(const size_t column_n,std::string value,const std::string table_name) {
 	size_t index = -1;
 	for (size_t i = 0; i < number_of_tables; i++) {
 		if (all_tables[i].get_name() == table_name) {
@@ -62,8 +73,7 @@ void Database::select(const size_t column_n,const std::string value,const std::s
 	}
 	else {
 		for (size_t i = 0; i < all_tables[index].get_column(0).get_number_of_rows(); i++) {
-			f<< all_tables[index].get_column(column_n).get_row(i) << "|" << value;
-			std::cout << value.compare(all_tables[index].get_column(column_n).get_row(i));
+			value.resize(20);
 			if (value.compare(all_tables[index].get_column(column_n).get_row(i))==0) {
 				all_tables[index].get_column(column_n).print_row();
 			}
@@ -71,7 +81,6 @@ void Database::select(const size_t column_n,const std::string value,const std::s
 
 		}
 	}
-	f.close();
 }
 
 void Database::addcolumn(std::string table_name, std::string column_type) {
@@ -110,7 +119,7 @@ void Database::addcolumn(std::string table_name, std::string column_type) {
 	}
 
 }
-void Database::remove(const std::string table_name, const size_t column_n, const std::string value) {
+void Database::remove(const std::string table_name, const size_t column_n,std::string value) {
 	size_t index = -1;
 	for (size_t i = 0; i < number_of_tables; i++) {
 		if (all_tables[i].get_name() == table_name) {
@@ -122,9 +131,10 @@ void Database::remove(const std::string table_name, const size_t column_n, const
 		std::cout << "There is no table with this name in the database!" << std::endl;
 	}
 	else {
-		for (size_t i = 0; i < all_tables[index].get_num_of_columns(); i++) {
+		value.resize(20);
+		for (size_t i = 0; i < all_tables[index].get_column(column_n).get_number_of_rows(); i++) {
 			if (all_tables[index].get_column(column_n).get_row(i) == value) {
-				all_tables[index].get_column(column_n).delete_row(i);
+				all_tables[index].get_column(column_n).set_row(i, "");
 			}
 		}
 	}
@@ -212,7 +222,7 @@ size_t Database::count(const std::string table_name, const size_t column_n,const
 	return counter;
 }
 
-void Database::update(const std::string table_name, const size_t column_n, const std::string value, const size_t target_column_n, const std::string target_value) {
+void Database::update(const std::string table_name, const size_t column_n,std::string value, const size_t target_column_n, const std::string target_value) {
 	size_t index = -1;
 	for (size_t i = 0; i < number_of_tables; i++) {
 		if (all_tables[i].get_name() == table_name) {
@@ -224,11 +234,103 @@ void Database::update(const std::string table_name, const size_t column_n, const
 		std::cout << "There is no table with this name in the database!" << std::endl;
 	}
 	else {
-		for (size_t i = 0; i < all_tables[index].get_num_of_columns(); i++) {
+		value.resize(20);
+		for (size_t i = 0; i < all_tables[index].get_column(column_n).get_number_of_rows(); i++) {
 			if (all_tables[index].get_column(column_n).get_row(i) == value) {
-				//all_tables[index].get_column(target_column_n).set_row(target_value);
-				break;
+				all_tables[index].get_column(target_column_n).set_row(i, target_value);
 			}
 		}
 	}
+}
+void Database::aggregate(const std::string table_name, const size_t column_n, std::string value, const size_t target_column_n, const std::string operation) {
+	double result=0;
+	if (operation != "sum" && operation != "product" && operation != "maximum" && operation != "minimum") {
+		std::cout << "Invalid operation!"<<std::endl;
+	}
+	else {
+		size_t index = -1;
+		
+		for (size_t i = 0; i < number_of_tables; i++) {
+			if (all_tables[i].get_name() == table_name) {
+				index = i;
+				break;
+			}
+		}
+		if (index == -1) {
+			std::cout << "There is no table with this name in the database!" << std::endl;
+		}
+		else {
+			if (all_tables[index].get_column(target_column_n).get_columtype() != type::Integer&& all_tables[index].get_column(target_column_n).get_columtype() != type::Double) {
+				std::cout << "The target's columntype is not Integer or Double!"<<std::endl;
+			}
+			else {
+				value.resize(20);
+				for (size_t i = 0; i < all_tables[index].get_column(column_n).get_number_of_rows(); i++) {
+					if (all_tables[index].get_column(column_n).get_row(i) == value) {
+						if (all_tables[index].get_column(target_column_n).get_columtype() != type::Integer) {
+							result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(0));
+							for (size_t j = 1; j < all_tables[index].get_column(target_column_n).get_number_of_rows(); j++) {
+								if (operation == "sum") {
+
+									result += all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+								}
+								if (operation == "product") {
+
+									result *= all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+								}
+								if (operation == "maximum") {
+									if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j)) > result) {
+
+
+										result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+									}
+								}
+								if (operation == "minimum") {
+									if (all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j)) < result) {
+
+
+										result = all_tables[index].get_column(target_column_n).string_to_int(all_tables[index].get_column(target_column_n).get_row(j));
+									}
+
+								}
+
+							}
+						}
+						else {
+							result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(0));
+							for (size_t j = 1; j < all_tables[index].get_column(target_column_n).get_number_of_rows(); j++) {
+								if (operation == "sum") {
+
+									result += all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+								}
+								if (operation == "product") {
+
+									result *= all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+								}
+								if (operation == "maximum") {
+									if (all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j)) > result) {
+
+
+										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+									}
+								}
+								if (operation == "minimum") {
+									if (all_tables[index].get_column(target_column_n).string_to_double((all_tables[index].get_column(target_column_n).get_row(j))) < result) {
+
+
+										result = all_tables[index].get_column(target_column_n).string_to_double(all_tables[index].get_column(target_column_n).get_row(j));
+									}
+
+								}
+
+							}
+
+						}
+					}
+				}
+			}
+		}
+		std::cout << result<<std::endl;
+	}
+	
 }
