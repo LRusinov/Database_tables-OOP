@@ -1,5 +1,5 @@
 #include "StringClass.h"
-enum class type{Integer,Double,String,Null};
+enum class type{Integer,Double,String,Null,Unknown};
 class Column {
 private:
 	type column_type;
@@ -20,6 +20,8 @@ public:
 	void pr();
 	void print_row();
 	void delete_row(const size_t n);
+	double string_to_double(const std::string str);//
+	int string_to_int(const std::string str);//?
 
 	
 
