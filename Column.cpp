@@ -41,8 +41,9 @@ type Column::type_check(std::string* _rows) {
 	if (_rows[0][0] == '"') {
 		return type::String;
 	}
-	else if (_rows[0][0] < '1' && _rows[0][0] > '0') {
+	else if (!(_rows[0][0] >= '1' && _rows[0][0] <='9')) {
 		std::cout << "Unknown columntype!";
+		return type::Unknown;
 	}
 	else {
 		if (_rows[0].length() == 0) {
@@ -94,7 +95,7 @@ void Column::new_row(const std::string new_row) {
 
 }
 void Column::pr() {
-	for (int i = 0; i < number_of_rows; i++) {
+	for (size_t i = 0; i < number_of_rows; i++) {
 		std::cout << rows[i];
 	}
 	std::cout << std::endl;
@@ -123,4 +124,99 @@ void Column::delete_row(const size_t n) {
 }
 void Column::set_number_of_rows(const size_t n) {
 	number_of_rows = n;
+}
+void Column::set_row(const size_t index, const std::string new_row_name) {
+	rows[index] = new_row_name;
+}
+double Column::string_to_double(const std::string str) {
+	bool sig = false, sig_minus = false;
+	double result = 0;
+	size_t temp = 0, start_index = 0, length = str.length();
+	if (str[0] == '+' || str[0] == '-') {
+		sig = true;
+		start_index = 1;
+		if (str[0] == '-') {
+			sig_minus = true;
+		}
+	}
+
+
+
+	for (size_t i = start_index; i < str.length(); i++) {
+		if (!(str[i] >= '0' && str[i] <='9') && str[i] != '.') {
+			length = i;
+			break;
+		}
+	}
+	int s = length;
+	if (sig) {
+
+		s--;
+	}
+
+	for (size_t i = start_index; i < length; i++) {
+
+		if (str[i] == '.') {
+			temp = i + 1;
+			s -= i;
+			break;
+		}
+		result += (double(str[i]) - 48) * pow(10, s);
+
+		s--;
+	}
+	if (!sig) {
+		s--;
+	}
+	result = result / pow(10, (length - temp + 2));
+	for (size_t i = temp; i < length; i++) {
+
+		result += (double(str[i]) - 48) * pow(10, s);
+		s--;
+	}
+	if (sig_minus) {
+		return result * -1;
+	}
+	else {
+		return result;
+	}
+}
+int Column::string_to_int(const std::string str) {
+	bool sig = false, sig_minus = false;
+	int result = 0;
+	size_t temp = 0, start_index = 0, length = str.length();
+
+	if (str[0] == '+' || str[0] == '-') {
+		sig = true;
+		start_index = 1;
+		if (str[0] == '-') {
+			sig_minus = true;
+		}
+	}
+
+
+
+	for (size_t i = start_index; i < str.length(); i++) {
+		if (!(str[i] >='0' && str[i] <='9')) {
+			length = i;
+			break;
+		}
+	}
+	int s = length;
+	if (sig) {
+
+		s--;
+	}
+	s--;
+	for (size_t i = start_index; i < length; i++) {
+		result += str[i] - 48 * pow(10, s);
+
+		s--;
+	}
+	if (sig_minus) {
+		return result * -1;
+	}
+	else {
+		return result;
+	}
 }
