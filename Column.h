@@ -1,5 +1,5 @@
 #include "StringClass.h"
-enum class type{Integer,Double,String,Null,Unknown};
+enum class type{Integer,Double,String,Unknown};
 class Column {
 private:
 	type column_type;
@@ -9,19 +9,21 @@ public:
 	Column();
 	Column(Column& other);
 	//~Column();
+
+	void set_row(const size_t index, const std::string& new_row_name);
+	std::string get_row(const size_t n)const;
 	void set_number_of_rows(const size_t n);
 	size_t get_number_of_rows()const;
-	void set_columtype(const std::string _column_type);
-	type get_columtype()const;
-	type type_check(std::string* _rows);
-	void new_row(const std::string new_row);
-	void set_row(const size_t index, const std::string new_row_name);
-	std::string get_row(const size_t n)const;
-	void pr();
+	void new_row(const std::string& new_row);
 	void print_row();
 	void delete_row(const size_t n);
-	double string_to_double(const std::string str);//
-	int string_to_int(const std::string str);//?
+
+	void set_columtype(const std::string& _column_type);
+	type get_columtype()const;
+	type type_check(std::string* _rows);
+
+	double string_to_double(const std::string& str);
+	int string_to_int(const std::string& str);
 
 	
 
