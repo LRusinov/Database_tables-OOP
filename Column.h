@@ -1,4 +1,5 @@
-#include "StringClass.h"
+#include<iostream>
+#include<string>
 enum class type{Integer,Double,String,Unknown};
 class Column {
 private:
@@ -8,7 +9,6 @@ private:
 public:
 	Column();
 	Column(Column& other);
-	//~Column();
 
 	void set_row(const size_t index, const std::string& new_row_name);
 	std::string get_row(const size_t n)const;
