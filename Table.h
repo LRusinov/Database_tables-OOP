@@ -23,7 +23,8 @@ public:
 	void print_with_pages();//
 	void print();//
 	void Read_from_file(const std::string&  file_name);//
-	
+	void export_to_file(const std::string& file_name);
+
 	Table& operator=(const Table& other);//
 	
 
