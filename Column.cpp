@@ -11,9 +11,6 @@ Column::Column(Column& other) {
 	this->number_of_rows = other.number_of_rows;
 	this->rows = other.rows;
 }
-/*Column::~Column() {
-	delete[] rows;
-}*/
 
 
 void Column::set_row(const size_t index, const std::string& new_row_name) {
