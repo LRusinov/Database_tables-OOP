@@ -6,7 +6,7 @@ Table::Table() {
     columns = nullptr;
 }
 /*Table::~Table() {
-    delete[] columns;
+        delete[] columns;
 }*/
 
 
@@ -147,7 +147,6 @@ void Table::print_with_pages() {
 void Table::print() {
     size_t counter = 0, num_of_r = columns[0].get_number_of_rows(), printed_columns = 0, limit, curr_page = 1;
     std::cout << name << std::endl;
-
     while (printed_columns != number_of_columns) {
         if (number_of_columns - printed_columns > 4) {
             limit = 4;
@@ -258,6 +257,50 @@ void Table::Read_from_file(const std::string& file_name) {
     myfile.close();
 }
 
+void Table::export_to_file(const std::string& file_name) {
+    size_t num_of_c = get_num_of_columns();
+    size_t num_of_r = get_column(0).get_number_of_rows();
+    std::ofstream myfile;
+    myfile.open(file_name, std::ios::out);
+    for (size_t i = 0; i < num_of_c; i++) {
+
+        switch (get_column(i).get_columtype()) {
+        case type::Double: myfile << "Double"; break;
+        case type::Integer: myfile << "Integer"; break;
+        case type::String: myfile << "String"; break;
+        }
+        if (i + 1 < num_of_c) {
+            myfile << ",";
+        }
+    }
+    myfile << std::endl;
+    myfile << get_name() << std::endl;
+    size_t counter = 0;
+    for (size_t i = 0; i < num_of_c * 21; i++) {
+        myfile << "=";
+    }
+    myfile << std::endl;
+    while (counter < num_of_r) {
+        myfile << "|";
+        for (size_t i = 0; i < num_of_c; i++) {
+            myfile << get_column(i).get_row(counter);
+            if (get_column(i).get_row(counter).length() < 20) {
+                size_t len = get_column(i).get_row(counter).length();
+                for (size_t g = 0; g < 20 - len; g++) {
+                    myfile << " ";
+                }
+            }
+            myfile << "|";
+        }
+        myfile << std::endl;
+        for (size_t i = 0; i < num_of_c * 21; i++) {
+            myfile << "=";
+        }
+        myfile << std::endl;
+        counter++;
+    }
+    myfile.close();
+}
 Table& Table::operator=(const Table& other) {
     this->name = other.name;
     this->columns = other.columns;
