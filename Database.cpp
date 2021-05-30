@@ -1,7 +1,9 @@
 #include "Database.h"
 #include<fstream>
-
 Database::Database() {
+	std::ofstream myfile;
+	myfile.open("catalogue.txt", std::ios::trunc);
+	myfile.close();
 	all_tables = nullptr;
 	names_of_files = nullptr;
 	number_of_files = 0;
@@ -13,6 +15,17 @@ Database::Database(Database& other) {
 	this->number_of_files = other.number_of_files;
 	this->number_of_tables = other.number_of_tables;
 }
+
+size_t Database::get_num_of_files()const {
+	return number_of_files;
+}
+size_t Database::get_num_of_tables()const {
+	return number_of_tables;
+}
+Table& Database::get_table(const size_t index) {
+	return all_tables[index];
+}
+
 
 void Database::showtables() {
 	std::cout << "DATABASE: " << std::endl << std::endl;
@@ -37,7 +50,7 @@ void Database::import(const std::string& filename) {
 	}
 	delete[] buff;
 	all_tables[number_of_tables - 1] = new_table;
-
+	export_table(all_tables[number_of_tables - 1].get_name(), "catalogue.txt", true);
 	std::string* buff2 = new std::string[number_of_files];
 	for (size_t i = 0; i < number_of_files - 1; i++) {
 		buff2[i] = names_of_files[i];
@@ -49,6 +62,7 @@ void Database::import(const std::string& filename) {
 	}
 	delete[] buff2;
 	names_of_files[number_of_files - 1] = filename;
+
 }
 
 void Database::describe(const std::string& table_name) {
@@ -105,7 +119,8 @@ void Database::addcolumn(const std::string& table_name, const std::string& colum
 		for (size_t i = 0; i < num_of_c - 1; i++) {
 			all_tables[index].set_column(i,buff[i]);
 		}
-		delete[] buff;
+		
+		//delete[] buff;
 		all_tables[index].set_column(num_of_c - 1, new_column);
 	}
 
@@ -117,7 +132,7 @@ void Database::remove(const std::string& table_name, const size_t column_n,const
 		size_t num_of_r = all_tables[index].get_column(column_n).get_number_of_rows();
 		for (size_t i = 0; i < num_of_r; i++) {
 			if (remove_spaces(all_tables[index].get_column(column_n).get_row(i)) == value) {
-				all_tables[index].get_column(column_n).set_row(i, "");
+				all_tables[index].get_column(column_n).set_row(i, "NULL");
 			}
 		}
 	}
@@ -132,7 +147,7 @@ void Database::insert(const std::string& table_name, const std::string* arr,cons
 
 void Database::innerjoin(const std::string& table_1, const size_t column_num_1, const std::string& table_2, const size_t column_num_2) {
 	Table innerjoined_table;
-	bool flag = true;
+	bool flag = true, flag2=true;
 	size_t index_of_table1, index_of_table2, rows_column1, rows_column2,counter=0,columns_table1, columns_table2;
 	index_of_table1 = find_table(table_1);
 	index_of_table2 = find_table(table_2);
@@ -145,12 +160,47 @@ void Database::innerjoin(const std::string& table_1, const size_t column_num_1, 
 			if (all_tables[index_of_table1].get_column(column_num_1).get_row(i) == all_tables[index_of_table2].get_column(column_num_2).get_row(g)) {
 				if (flag) {
 					innerjoined_table.new_columns(columns_table1 + columns_table2 - 1);
+					innerjoined_table.set_num_of_columns(columns_table1 + columns_table2 - 1);
+					flag = false;
 				}
-
+				for (size_t j = 0; j < columns_table1; j++) {
+					innerjoined_table.get_column(counter).new_row(all_tables[index_of_table1].get_column(j).get_row(i));
+					if (flag2) {
+						innerjoined_table.get_column(counter).set_columtype(enum_to_string(all_tables[index_of_table1].get_column(j).get_columtype()));
+					}
+					counter++;
+					
+				}
+				for (size_t j = 0; j < columns_table2; j++) {
+					if (j == column_num_2) {
+						j++;
+						if (j == columns_table2) {
+							break;
+						}
+					}
+					innerjoined_table.get_column(counter).new_row(all_tables[index_of_table2].get_column(j).get_row(g));
+					if (flag2) {
+						innerjoined_table.get_column(counter).set_columtype(enum_to_string(all_tables[index_of_table2].get_column(j).get_columtype()));
+						flag2 = false;
+					}
+					counter++;
+				}
 			}
+			counter = 0;
 		}
 	}
-
+	innerjoined_table.print_with_pages();
+	std::cout << "Do you want to save the table?(y-Yes/n-No) ";
+	std::string input;
+	std::cin >> input;
+	if (input == "y") {
+		std::cout << "Enter file for the export ";
+		std::cin >> input;
+		innerjoined_table.export_to_file(input);
+	}
+	else if (input != "n") {
+		std::cout << "Incorect comand.Please enter y-Yes/n-No. ";
+	}
 }
 
 void Database::rename(const std::string& old_name,const std::string& new_name) {
@@ -172,13 +222,18 @@ void Database::rename(const std::string& old_name,const std::string& new_name) {
 	}
 }
 
-void Database::export_table(const std::string& table_name, const std::string& file_name){
+void Database::export_table(const std::string& table_name, const std::string& file_name, const bool flag){
 	Table searched_table;
 	if (searched_table.search_table(table_name, all_tables, number_of_tables)) {
 		size_t num_of_c = searched_table.get_num_of_columns();
 		size_t num_of_r = searched_table.get_column(0).get_number_of_rows();
 		std::ofstream myfile;
-		myfile.open(file_name, std::ios::out);
+		if (flag) {
+			myfile.open(file_name, std::ios::app);
+		}
+		else {
+			myfile.open(file_name, std::ios::out);
+		}
 		for (size_t i = 0; i < num_of_c; i++) {
 
 			switch (searched_table.get_column(i).get_columtype()) {
@@ -364,6 +419,7 @@ void Database::menu() {
 		std::cout << "Enter comand from the menu  ";
 		std::cin >> input;
 		if (input == "1") { 
+			std::cout << "Enter filename(*.txt) ";
 			std::cin >> f_name; 
 			import(f_name); 
 			std::cout << "The table is imported."<<std::endl;
@@ -375,6 +431,7 @@ void Database::menu() {
 			print_menu_options();
 		}
 		else if (input == "o") {
+			std::cout << "Enter tablename from the database ";
 			std::cin.ignore();
 			std::getline(std::cin, t_name);
 			int index_of_table = find_table(t_name);
@@ -387,33 +444,34 @@ void Database::menu() {
 		else if (!if_table_is_opened(opened_table)) {
 			std::cout << "There is no opened table.";
 		}
-		else if (input == "3"&& if_table_is_opened(opened_table)) {
+		else if (input == "3") {
+			std::cout << "The columntypes are:";
 			describe(opened_table);
 		}
-		else if (input == "4" && if_table_is_opened(opened_table)) {
+		else if (input == "4") {
 			print(opened_table);
 		}
-		else if (input == "5" && if_table_is_opened(opened_table)) {
+		else if (input == "5") {
 			std::cout << "Enter: <num of column>(int) <value to search>" << std::endl;
 			std::cin >> column_n >> value;
 			select(column_n, value, opened_table);
 		}
-		else if (input == "6" && if_table_is_opened(opened_table)) {
+		else if (input == "6") {
 			std::cout << "Enter: <column name> <column type>" << std::endl;
 			std::cin >> c_name >> c_type;
 			addcolumn(opened_table, c_name, c_type);
 		}
-		else if (input == "7" && if_table_is_opened(opened_table)) {
+		else if (input == "7") {
 			std::cout << "Enter: <num of column>(int) <value to search> <num of the target column> <target value>: " << std::endl;
 			std::cin >> column_n >> value >> target_column_n >> target_value;
 			update(opened_table, column_n, target_value, target_column_n, target_value);
 		}
-		else if (input == "8" && if_table_is_opened(opened_table)) {
+		else if (input == "8") {
 			std::cout << "Enter: <num of column>(int) <value to search>" << std::endl;
 			std::cin >> column_n >> value;
 			remove(opened_table, column_n, value);
 		}
-		else if (input == "9" && if_table_is_opened(opened_table)) {
+		else if (input == "9") {
 			size_t index = find_table(opened_table);
 			size_t size = all_tables[index].get_num_of_columns();
 			std::string* column_values = new std::string[size];
@@ -425,36 +483,44 @@ void Database::menu() {
 			insert(opened_table, column_values, size, index);
 			delete[] column_values;
 		}
-		else if (input == "10" && if_table_is_opened(opened_table)) {
-			std::cin >> column_n >> t_name >> target_column_n;
+		else if (input == "10") {
+			std::cout << "Enter: <num of column from table 1>(int) <table_name> <num of column from table 2>: " << std::endl;
+			
+			std::cin >> column_n;
+			std::cin.ignore();
+			std::getline(std::cin, t_name);
+			std::cin>> target_column_n;
+			innerjoin(opened_table, column_n, t_name, target_column_n);
 		}
-		else if (input == "11" && if_table_is_opened(opened_table)) {
+		else if (input == "11") {
 			std::cout << "Enter: <new name of the table>" << std::endl;
 			std::cin.ignore();
 			std::getline(std::cin,t_name);
 			rename(opened_table, t_name);
 			opened_table = t_name;
 		}
-		else if (input == "12" && if_table_is_opened(opened_table)) {
+		else if (input == "12") {
 			std::cout << "Enter: <num of column>(int) <value to search>" << std::endl;
 			std::cin >> column_n >> value;
 			count(opened_table, column_n, value);
 		}
-		else if (input == "13" && if_table_is_opened(opened_table)) {
+		else if (input == "13") {
 			std::cout << "Enter: <num of column>(int) <value to search> <num of target column>(int) <operation>(sum,minimum,maximum or product)" << std::endl;
-			std::cin >> column_n >> value >> target_column_n >> operation; aggregate(opened_table, column_n, value, target_column_n, operation);
+			std::cin >> column_n >> value >> target_column_n >> operation; 
+			aggregate(opened_table, column_n, value, target_column_n, operation);
 		}
-		else if (input == "s" && if_table_is_opened(opened_table)) {
+		else if (input == "s") {
 			export_table(opened_table, opened_file);
 			std::cout << "The table is saved."<<std::endl;
 
 		}
-		else if (input == "sa" && if_table_is_opened(opened_table)) {
+		else if (input == "sa") {
+			std::cout << "Enter filename for the export (*.txt) ";
 			std::cin >> f_name;
 			export_table(opened_table, f_name);
 			std::cout << "The table is saved in" << f_name<<"."<< std::endl;
 		}
-		else if (input == "c" && if_table_is_opened(opened_table)) {
+		else if (input == "c") {
 			opened_table.clear();
 			opened_table = "";
 			std::cout << "The table is closed." << std::endl;
@@ -499,4 +565,18 @@ int Database::find_table(const std::string& table_name) {
 		std::cout << "There is no table with this name in the database!" << std::endl;
 	}
 	return index;
+}
+
+std::string Database::enum_to_string(const type& type_of_c) {
+	std::string col_type;
+	if (type_of_c == type::Double) {
+		col_type = "Double";
+	}
+	else if (type_of_c == type::Integer) {
+		col_type = "Integer";
+	}
+	else if (type_of_c == type::String) {
+		col_type = "String";
+	}
+	return col_type;
 }
