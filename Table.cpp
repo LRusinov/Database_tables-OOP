@@ -1,14 +1,11 @@
 #include"Table.h"
 #include<fstream>
+
 Table::Table() {
     name = "";
     number_of_columns = 0;
     columns = nullptr;
 }
-/*Table::~Table() {
-        delete[] columns;
-}*/
-
 
 void Table::set_name(const std::string& new_name) {
     this->name = new_name;
@@ -18,7 +15,7 @@ std::string Table::get_name()const{
     return name;
 }
 
-void Table::set_num_of_columns(const size_t n) {
+void Table::set_num_of_columns(const size_t& n) {
     number_of_columns = n;
 }
 
@@ -26,16 +23,15 @@ size_t Table::get_num_of_columns()const {
     return number_of_columns;
 }
 
-void Table::set_column(const size_t n, const Column& column) {
+void Table::set_column(const size_t& n, const Column& column) {
     columns[n] = column;
-
 }
 
-Column& Table::get_column(const size_t n)const {
+Column& Table::get_column(const size_t& n)const {
     return columns[n];
 }
 
-void Table::new_columns(const size_t size) {
+void Table::new_columns(const size_t& size) {
     columns = new Column[size];
 }
 
@@ -43,10 +39,12 @@ Column* Table::get_columns()const {
     return this->columns;
 }
 
+//Изтрива всички колони в таблицата.
 void Table::destroy_columns() {
     delete[] columns;
 }
 
+//Принтира типовете на колоните.
 void Table::show_columnstypes(){
     for (size_t i = 0; i < number_of_columns; i++) {
         std::cout << std::endl;
@@ -57,10 +55,10 @@ void Table::show_columnstypes(){
         case type::Unknown: std::cout << i + 1 << ". " << "Unknown"; break;
         }
     }
-
 }
 
-bool Table::search_table(const std::string& name, const Table* tables, const size_t num_of_tables) {
+//Търси таблица по подаден масив от таблици.
+bool Table::search_table(const std::string& name, const Table* tables, const size_t& num_of_tables) {
     for (size_t i = 0; i < num_of_tables; i++) {
         if (tables[i].get_name() == name) {
             *this = tables[i];
@@ -76,6 +74,7 @@ bool Table::search_table(const std::string& name, const Table* tables, const siz
     }
 }
 
+//Принтира таблица в диалогов режим за разглеждане по страници.
 void Table::print_with_pages() {
     std::string input;
     size_t counter = 0, num_of_r = columns[0].get_number_of_rows(), printed_columns=0, limit=4, curr_page=1, all_pages;
@@ -141,9 +140,9 @@ void Table::print_with_pages() {
             std::cout << "n-Next page  p-Previous page  e-Exit";
             std::cin >> input;
         }
-
 }
 
+//Принтира таблицата.
 void Table::print() {
     size_t counter = 0, num_of_r = columns[0].get_number_of_rows(), printed_columns = 0, limit, curr_page = 1;
     std::cout << name << std::endl;
@@ -181,9 +180,9 @@ void Table::print() {
         }
         printed_columns += limit;
     }
-
 }
 
+//Чете таблица от файл.
 void Table::Read_from_file(const std::string& file_name) {
     std::ifstream myfile(file_name);
     size_t counter = 0, column_counter = 0;
@@ -192,7 +191,7 @@ void Table::Read_from_file(const std::string& file_name) {
         counter++;
         if (counter == 1) {
             size_t index = 0, len = text.length();
-            for (size_t i = 0; i < text.length(); i++) {
+            for (size_t i = 0; i < len; i++) {
                 if (text[i] == ',') {
                     number_of_columns++;
                 }
@@ -257,6 +256,7 @@ void Table::Read_from_file(const std::string& file_name) {
     myfile.close();
 }
 
+//Пише таблица във файл.
 void Table::export_to_file(const std::string& file_name) {
     size_t num_of_c = get_num_of_columns();
     size_t num_of_r = get_column(0).get_number_of_rows();
@@ -301,6 +301,7 @@ void Table::export_to_file(const std::string& file_name) {
     }
     myfile.close();
 }
+
 Table& Table::operator=(const Table& other) {
     this->name = other.name;
     this->columns = other.columns;
